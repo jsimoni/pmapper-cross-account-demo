@@ -21,6 +21,8 @@ pmapper graph create
 
 # Search Authorization Across Accounts
 
+[action and resource parameters](https://github.com/nccgroup/PMapper/wiki/CLI-Reference#argquery) 
+
 ```
 import os
 import os.path
@@ -32,12 +34,12 @@ from principalmapper.graphing.cross_account_edges import get_edges_between_graph
 from principalmapper.querying.query_interface import search_authorization_for, search_authorization_across_accounts
 from principalmapper.util.storage import get_default_graph_path
 
-#enter the [action & resource parameters](https://github.com/nccgroup/PMapper/wiki/CLI-Reference#argquery) here:
+#enter the action and resource parameters here:
 ACTION = ''
 RESOURCE = ''
 
-root_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("569715827492")))
-prod_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("602857735579")))
+root_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("First Account Number")))
+prod_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("Second Account Number")))
 
 edges = get_edges_between_graphs(root_graph, prod_graph)
 
