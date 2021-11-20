@@ -28,24 +28,39 @@ import os
 import os.path
 
 from principalmapper.common import Graph
-from principalmapper.common import Graph
+from principalmapper.common import Policy
 from principalmapper.graphing import gathering, graph_actions
 from principalmapper.graphing.cross_account_edges import get_edges_between_graphs
 from principalmapper.querying.query_interface import search_authorization_for, search_authorization_across_accounts
+from principalmapper.querying import query_utils
 from principalmapper.util.storage import get_default_graph_path
 
-#enter the action and resource parameters here:
-ACTION = ''
-RESOURCE = ''
 
-root_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("First Account Number")))
-prod_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path("Second Account Number")))
+#enter the action and resource parameters here:
+SOURCE_AWS_ACCOUNT_ID = ""
+DEST_AWS_ACCOUNT_ID = ""
+ACTION = ""
+RESOURCE_ARN = ""
+INCLUDE_RESOURCE_POLICY = False
+
+root_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path(SOURCE_AWS_ACCOUNT_ID)))
+prod_graph = graph_actions.get_graph_from_disk(os.path.join(get_default_graph_path(DEST_AWS_ACCOUNT_ID)))
 
 edges = get_edges_between_graphs(root_graph, prod_graph)
 
 for node in root_graph.nodes:
-    result = search_authorization_across_accounts([(root_graph, []), (prod_graph, [])], edges, node, ACTION, RESOURCE, {})
+    if INCLUDE_RESOURCE_POLICY:
+        resource_policy = query_utils.pull_cached_resource_policy_by_arn(
+                    prod_graph,
+                    arn=RESOURCE_ARN,
+                    query=None
+                )
+        if isinstance(resource_policy, Policy):
+            resource_policy = resource_policy.policy_doc
+        result = search_authorization_across_accounts([(root_graph, []), (prod_graph, [])], edges, node, ACTION, RESOURCE_ARN, {}, resource_policy, DEST_AWS_ACCOUNT_ID)
+    else:
+        result = search_authorization_across_accounts([(root_graph, []), (prod_graph, [])], edges, node, ACTION, RESOURCE_ARN, {})
+
     if result.allowed == True:
-        #print(result.node)
-        result.print_result(ACTION, RESOURCE)
+        result.print_result(ACTION, RESOURCE_ARN)
 ```
